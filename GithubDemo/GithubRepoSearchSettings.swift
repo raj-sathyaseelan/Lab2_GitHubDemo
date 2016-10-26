@@ -9,12 +9,22 @@
 import Foundation
 
 // Model class that represents the user's search settings
-class GithubRepoSearchSettings {
+class GithubRepoSearchSettings: NSObject {
     var searchString: String?
     var minStars:Int = 0
     var language: String?
     
-    init() {
+    init(searchString: String, minStars: Int, language: String) {
         
+        super.init()
+        self.searchString = searchString
+        self.minStars = minStars
+        self.language = language
     }
+    
+    func copy(with zone: NSZone? = nil) -> GithubRepoSearchSettings {
+        let copy = GithubRepoSearchSettings(searchString: self.searchString!, minStars: self.minStars, language: self.language!)
+        return copy
+    }
+
 }

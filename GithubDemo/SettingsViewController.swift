@@ -7,17 +7,26 @@
 //
 
 import UIKit
+import Foundation
 
-class SettingsViewController: UITableViewController, SettingsDelegate {
+
+@objc protocol SettingsViewControllerDelegate: class {
+    @objc optional func settingsView(settingsView: SettingsViewController, didSettingsChange settings: GithubRepoSearchSettings?)
+}
+
+
+class SettingsViewController: UITableViewController, SettingsViewControllerDelegate {
     
     var searchSettings: GithubRepoSearchSettings!
-    weak var delegate: SettingsDelegate?
+    weak var delegate: SettingsViewControllerDelegate?
     
     @IBOutlet weak var saveButton: UIBarButtonItem!
     @IBOutlet weak var cancelButton: UIBarButtonItem!
     
     @IBOutlet weak var minStarsValueLabel: UILabel!
     @IBOutlet weak var minStarsSlider: UISlider!
+    
+    weak var settingsDelegate: SettingsViewControllerDelegate!
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -35,6 +44,7 @@ class SettingsViewController: UITableViewController, SettingsDelegate {
             minStarsValueLabel.text = "1000"
         }
         
+        self.delegate = settingsDelegate
     }
 
     override func didReceiveMemoryWarning() {
@@ -53,7 +63,7 @@ class SettingsViewController: UITableViewController, SettingsDelegate {
     }
     
     //Delegate override method
-    func settings(resultsView: RepoResultsViewController, searchSettings settings: GithubRepoSearchSettings?) {
+    func settings(resultsView: SettingsViewControllerDelegate, searchSettings settings: GithubRepoSearchSettings?) {
         
     }
     
@@ -77,7 +87,9 @@ class SettingsViewController: UITableViewController, SettingsDelegate {
             
             // Set the meal to be passed to MealTableViewController after the unwind segue.
             //meal = Meal(name: name, photo: photo, rating: rating)
-            self.searchSettings.minStars = Int(minStarsSlider.value)
+            //self.searchSettings.minStars = Int(minStarsSlider.value)
+            
+            delegate?.settingsView?(settingsView: self, didSettingsChange: searchSettings)
             
         }
     }

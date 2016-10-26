@@ -9,8 +9,6 @@
 import UIKit
 
 class GithubRepoTableViewCell: UITableViewCell {
-    
-    
     @IBOutlet weak var repoNameLabel: UILabel!
     @IBOutlet weak var repoStarsLabel: UILabel!
     @IBOutlet weak var repoForksLabel: UILabel!

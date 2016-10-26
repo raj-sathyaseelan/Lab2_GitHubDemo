@@ -11,13 +11,13 @@ import MBProgressHUD
 import AFNetworking
 
 // Main ViewController
-class RepoResultsViewController: UIViewController,UITableViewDataSource, UITableViewDelegate {
+class RepoResultsViewController: UIViewController,UITableViewDataSource, UITableViewDelegate, SettingsViewControllerDelegate {
 
 
     @IBOutlet weak var reposTableView: UITableView!
     
     var searchBar: UISearchBar!
-    var searchSettings = GithubRepoSearchSettings()
+    var searchSettings = GithubRepoSearchSettings(searchString: "", minStars: 0, language: "")
 
     var repos: [GithubRepo]!
 
@@ -136,6 +136,11 @@ class RepoResultsViewController: UIViewController,UITableViewDataSource, UITable
             np.flick = Flicks[(row)]
         }
         */
+        
+    }
+    
+    func settingsView(settingsView: SettingsViewController, didSettingsChange settings: GithubRepoSearchSettings?) {
+        //code to update settings and reload results
         
     }
     
