@@ -15,35 +15,21 @@ import Foundation
 }
 
 
-class SettingsViewController: UITableViewController, SettingsViewControllerDelegate {
+class SettingsViewController: UITableViewController, SettingsViewControllerDelegate, MinStarsTableViewCellDelegate {
     
-    var searchSettings: GithubRepoSearchSettings!
+    var searchSettings = GithubRepoSearchSettings(searchString: "", minStars: 1000, language: [Language]())
     weak var delegate: SettingsViewControllerDelegate?
+    
+    @IBOutlet var settingsTableView: UITableView!
+    
     
     @IBOutlet weak var saveButton: UIBarButtonItem!
     @IBOutlet weak var cancelButton: UIBarButtonItem!
     
-    @IBOutlet weak var minStarsValueLabel: UILabel!
-    @IBOutlet weak var minStarsSlider: UISlider!
-    
-    weak var settingsDelegate: SettingsViewControllerDelegate!
+    var settingsDelegate: SettingsViewControllerDelegate!
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        minStarsSlider.minimumValue = 1000
-        minStarsSlider.maximumValue = 100000
-
-        // Do any additional setup after loading the view.
-        
-        if searchSettings != nil {
-            minStarsSlider.value = Float("\(searchSettings.minStars)")!
-            minStarsValueLabel.text = "\(searchSettings.minStars)"
-        } else {
-            minStarsSlider.value = 1000
-            minStarsValueLabel.text = "1000"
-        }
-        
         self.delegate = settingsDelegate
     }
 
@@ -54,23 +40,20 @@ class SettingsViewController: UITableViewController, SettingsViewControllerDeleg
     
     @IBAction func SaveBarButtonAction(_ sender: AnyObject) {
         print("Save pressed")
-        self.searchSettings.minStars = Int(minStarsSlider.value)
+        dismiss(animated: true, completion: nil)
+        self.delegate?.settingsView!(settingsView: self, didSettingsChange: searchSettings)
     }
     
     @IBAction func cancelButtonAction(_ sender: AnyObject) {
         print("cancel pressed")
-        dismiss(animated: true, completion: nil)
+        
     }
     
     //Delegate override method
-    func settings(resultsView: SettingsViewControllerDelegate, searchSettings settings: GithubRepoSearchSettings?) {
-        
+    func settingsView(settingsView: SettingsViewController, didSettingsChange settings: GithubRepoSearchSettings?) {
+        //
     }
     
-    @IBAction func minStarssliderChanged(_ sender: AnyObject) {
-        
-        minStarsValueLabel.text =  "\(minStarsSlider.value)"
-    }
 
     /*
     // MARK: - Navigation
@@ -82,16 +65,176 @@ class SettingsViewController: UITableViewController, SettingsViewControllerDeleg
     }
     */
     
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        
+        if (section == 0) {
+            return 1
+        }
+        else if section == 1 {
+            return searchSettings.language.count
+        }
+        else {
+            return 0
+        }
+        
+    }
+
+    override func numberOfSections(in tableView: UITableView) -> Int {
+        return 2
+    }
+    
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        
+        
+        
+        if ( indexPath.section == 0 ) {
+            let cell = tableView.dequeueReusableCell(withIdentifier: "MinStarsTableViewCell", for: indexPath) as! MinStarsTableViewCell
+            
+            cell.minStarsSlider.minimumValue = 1000
+            cell.minStarsSlider.maximumValue = 5000
+            
+            //cell.minStarsSlider.value = 1000
+            //cell.minStarsValueLabel.text = "1000"
+            
+            
+            // Do any additional setup after loading the view.
+            
+            
+            cell.minStarsSlider.value = Float("\(searchSettings.minStars)")!
+            cell.minStarsValueLabel.text = "\(searchSettings.minStars)"
+            cell.delegate = self
+            return cell
+            
+        }
+        else if (indexPath.section == 1 ) {
+            let cell = tableView.dequeueReusableCell(withIdentifier: "LanguageTableViewCell", for: indexPath) as! LanguageTableViewCell
+            
+            cell.textLabel?.text = searchSettings.language[indexPath.row].name
+            return cell
+            
+        }
+        else {
+            return UITableViewCell()
+        }
+        
+    }
+    
+    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        if (section == 0 ) {
+            return "Minimum Stars"
+        }
+        else if(section == 1) {
+            return "Language"
+        }
+        else {
+            return ""
+        }
+    }
+    
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        
+        if(indexPath.section == 1 ) {
+            let cell = tableView.dequeueReusableCell(withIdentifier: "LanguageTableViewCell", for: indexPath) as! LanguageTableViewCell
+            //cell.accessoryType = UITableViewCellAccessoryType.checkmark
+            
+            
+            if cell.accessoryType == UITableViewCellAccessoryType.checkmark {
+                cell.accessoryType = UITableViewCellAccessoryType.none
+                searchSettings.language[indexPath.row].selected = false
+            } else {
+                cell.accessoryType = UITableViewCellAccessoryType.checkmark
+                searchSettings.language[indexPath.row].selected = true
+            }
+            
+            
+
+        }
+        
+    }
+    
+    override func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath) {
+        if(indexPath.section == 1 ) {
+            let cell = tableView.dequeueReusableCell(withIdentifier: "LanguageTableViewCell", for: indexPath) as! LanguageTableViewCell
+            cell.accessoryType = UITableViewCellAccessoryType.none
+            
+            /*
+            
+            if cell.accessoryType == UITableViewCellAccessoryType.checkmark {
+                cell.accessoryType = UITableViewCellAccessoryType.none
+                searchSettings.language[indexPath.row] = false
+            } else {
+                cell.accessoryType = UITableViewCellAccessoryType.checkmark
+                searchSettings.language[indexPath.row] = true
+            }
+            */
+        }
+
+    }
+    
+    func minStars(minsStarsCell: MinStarsTableViewCell, didSliderChange slider: UISlider!) {
+        searchSettings.minStars = Int(slider.value)
+    }
+    
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        
         if ((sender as? UIBarButtonItem) != nil) {
             
             // Set the meal to be passed to MealTableViewController after the unwind segue.
             //meal = Meal(name: name, photo: photo, rating: rating)
             //self.searchSettings.minStars = Int(minStarsSlider.value)
             
-            delegate?.settingsView?(settingsView: self, didSettingsChange: searchSettings)
+            delegate?.settingsView?(settingsView: self, didSettingsChange: searchSettings.copy())
             
         }
+        
     }
 
+}
+
+//Create a delegate to update the settings.
+@objc protocol MinStarsTableViewCellDelegate: class {
+    @objc optional func minStars(minsStarsCell: MinStarsTableViewCell, didSliderChange slider: UISlider!)
+}
+
+class MinStarsTableViewCell: UITableViewCell {
+    
+    @IBOutlet weak var minStarsValueLabel: UILabel!
+    @IBOutlet weak var minStarsSlider: UISlider!
+    
+    var delegate: MinStarsTableViewCellDelegate!
+    
+    override func awakeFromNib() {
+        super.awakeFromNib()
+        // Initialization code
+    }
+    
+    override func setSelected(_ selected: Bool, animated: Bool) {
+        super.setSelected(selected, animated: animated)
+        
+        // Configure the view for the selected state
+        
+    }
+    
+    @IBAction func minStarssliderChanged(_ sender: AnyObject) {
+        minStarsValueLabel.text =  "\(minStarsSlider.value)"
+        delegate.minStars!(minsStarsCell: self, didSliderChange: minStarsSlider)
+    }
+
+}
+
+class LanguageTableViewCell: UITableViewCell {
+    
+    var searchSettings: GithubRepoSearchSettings!
+    
+    override func awakeFromNib() {
+        super.awakeFromNib()
+        // Initialization code
+    }
+    
+    override func setSelected(_ selected: Bool, animated: Bool) {
+        super.setSelected(selected, animated: animated)
+        
+        // Configure the view for the selected state
+    }
+    
 }

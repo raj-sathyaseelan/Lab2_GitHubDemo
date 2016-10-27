@@ -17,8 +17,7 @@ class RepoResultsViewController: UIViewController,UITableViewDataSource, UITable
     @IBOutlet weak var reposTableView: UITableView!
     
     var searchBar: UISearchBar!
-    var searchSettings = GithubRepoSearchSettings(searchString: "", minStars: 0, language: "")
-
+    var searchSettings = GithubRepoSearchSettings(searchString: "", minStars: 0, language: [Language]())
     var repos: [GithubRepo]!
 
     override func viewDidLoad() {
@@ -106,10 +105,12 @@ class RepoResultsViewController: UIViewController,UITableViewDataSource, UITable
             if let nav = segue.destination as? UINavigationController {
                 
                 if let settingsViewController = nav.topViewController as? SettingsViewController {
+                    
                     settingsViewController.searchSettings =  self.searchSettings
+                    settingsViewController.delegate = self
                 }
 
-            
+        
             }
             
             /*
@@ -141,13 +142,17 @@ class RepoResultsViewController: UIViewController,UITableViewDataSource, UITable
     
     func settingsView(settingsView: SettingsViewController, didSettingsChange settings: GithubRepoSearchSettings?) {
         //code to update settings and reload results
+        //update settings
+        self.searchSettings = settings!
         
     }
     
     @IBAction func unwindToMealList(sender: UIStoryboardSegue) {
         
         if let sourceViewController = sender.source as? SettingsViewController {
-            let settings = sourceViewController.searchSettings!
+            
+            let settings = sourceViewController.searchSettings
+            self.searchSettings = settings
             print("\(settings.minStars)")
             
             //reload table view
